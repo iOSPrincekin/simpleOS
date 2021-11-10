@@ -1,14 +1,18 @@
 AS = nasm 
 ASFLAGS = -f elf
+CFLAGS = -I ./ -march=i386 -c -o
 ########################   汇编代码编译   ####################
 mbr.bin:mbr.S
 	$(AS) $< -o $@
 loader.bin:loader.S
 	$(AS) $< -o $@
-kernel.elf:main.c print.S
-	i386-elf-gcc -march=i386 -c -o main.o main.c
+kernel.elf:main.c print.S hierarchy1/hierarchy1.c
+	i386-elf-gcc $(CFLAGS) main.o main.c
+	i386-elf-gcc $(CFLAGS) hierarchy1/hierarchy1.o hierarchy1/hierarchy1.c
+	i386-elf-gcc $(CFLAGS) hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy2.c
+	i386-elf-gcc $(CFLAGS) hierarchy1/hierarchy2/hierarchy3/hierarchy3.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.c
 	$(AS) $(ASFLAGS) print.S -o print.o
-	i386-elf-ld -no-pie -m elf_i386 main.o print.o -Ttext 0xc0001500 -e main -o kernel.elf
+	i386-elf-ld -no-pie -m elf_i386 main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0xc0001500 -e main -o kernel.elf
 
 A_IMG := ./image/a.img
 
@@ -40,6 +44,7 @@ clean:
 	rm -f mbr.bin 
 	rm -f loader.bin
 	rm -f kernel.elf
+	rm -rf debug
 
 
 build: mbr.bin loader.bin kernel.elf
