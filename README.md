@@ -38,3 +38,32 @@ kernel.elf:main.c print.S hierarchy1/hierarchy1.c
 
 
 
+
+## xbuild
+
+基于makefile 使用[xbuild](https://github.com/ZhUyU1997/XBuild)进行辅助组织
+
+
+### 使用:
+```
+cd bootloader
+make all
+make qemu
+```
+
+### 缺点:
+
+对大型操作系统中复杂的源文件结构不好进行组织
+
+比如这种对 hierarchy1、hierarchy2、hierarchy3多层级源文件的组织在大型操作系统开发中是不可取的！
+
+```
+kernel.elf:main.c print.S hierarchy1/hierarchy1.c
+	i386-elf-gcc $(CFLAGS) main.o main.c
+	i386-elf-gcc $(CFLAGS) hierarchy1/hierarchy1.o hierarchy1/hierarchy1.c
+	i386-elf-gcc $(CFLAGS) hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy2.c
+	i386-elf-gcc $(CFLAGS) hierarchy1/hierarchy2/hierarchy3/hierarchy3.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.c
+	$(AS) $(ASFLAGS) print.S -o print.o
+	i386-elf-ld -no-pie -m elf_i386 main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0xc0001500 -e main -o kernel.elf
+
+```
