@@ -16,7 +16,7 @@ VPATH		:= $(srctree)
 export srctree objtree VPATH
 
 ROOT_DIR	:= .
-CP_FIXDEP	:= 1
+CP_FIXDEP	:= 0
 # config
 X_CONF_DIR	:=	$(obj)/include/config
 X_CONF_FILE	:=	$(srctree)/include/xconfigs.h

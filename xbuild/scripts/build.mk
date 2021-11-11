@@ -23,7 +23,7 @@ sinclude $(X_CONF_DIR)/auto.conf
 ifneq ($(wildcard $(srctree)/$(src)/Makefile),)
 include $(srctree)/$(src)/Makefile
 else
-SRC			:=	*.S *.c *.asm
+SRC			:=	*.S *.c
 endif # ifneq ($(wildcard $(srctree)/$(src)/Makefile),)
 
 ifeq ($(ISMODULE),0)
@@ -70,7 +70,7 @@ X_DEPS		:=	$(wildcard $(foreach f,$(X_TARGET),$(dir $(f)).$(notdir $(f)).cmd))
 $(sort $(X_SUB_OBJ)) : $(X_SUBDIR) ;
 PHONY		+=	$(X_SUBDIR) $(X_MODULE)
 
-$(X_OBJS) $(X_EXTRA) : $(X_PREPARE)
+$(X_OBJS) $(X_EXTRA) $(X_MODULE): $(X_PREPARE)
 clean: $(X_SUBDIR) $(X_MODULE)
 
 $(X_SUBDIR):
