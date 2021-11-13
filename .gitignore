@@ -73,3 +73,6 @@ libs/pthread/CMakeCache.txt
 !tools/*/*/Makefile
 !tools/*/*/makefile
 *CMakeCache.txt
+
+
+IDE/build/

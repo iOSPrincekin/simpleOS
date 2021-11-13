@@ -5,7 +5,8 @@
 
 阅读本工程之前，你应该具备基础的操作系统知识，本工程不会探讨具体的操作系统知识，旨在探讨和研究如何解决开发操作系统过程中遇到的效率问题，怎么使用现有的工具来提高开发和调试操作系统的效率，如何提高操作系统的开发体验
 
-本工程主要由以下四个模块组成:`bootloader`、`xbuild`、`cmake`、`IDE`
+本工程主要由以下四个模块组成:<a href="#bootloader_id">bootloader</a>、<a href="#xbuild_id">xbuild</a>、<a href="#grub2_id">grub2</a>、
+<a href="#CMake_id">CMake</a>、<a href="#IDE_id">IDE</a>
 
 <span id="bootloader_id"></span>
 ## bootloader
@@ -39,6 +40,7 @@ kernel.elf:main.c print.S hierarchy1/hierarchy1.c
 
 
 
+<span id="xbuild_id"></span>
 
 ## xbuild
 
@@ -55,7 +57,7 @@ make qemu
 相对于  <a href="#bootloader_id">bootloader</a>而言，解决了大型操作系统源文件组织困难的问题，同时和CMake相比具有轻量的特点。
 
 
-
+<span id="grub2_id"></span>
 ## grub2
 
 ### 使用:
@@ -120,7 +122,7 @@ ret
 ```
 
 
-随着开发的进行，kernel.elf 会越来越大，比如说大到 0x200000,那么kernel.elf中.bss段中的变量地址也很接近 0x200000，那么存放kernel.elf的0x60000起始的物理地址，将会和解析后kernel.elf代码段及.bss 端重合将导致未知错误，所以我们需要使用grub2帮我们处理这部分传统BootLoader需要做的工作，使用grub2我们只要专心开发内核就行，至于我们上面说的kernel.elf的存放和解析则都由grub2完成。
+随着开发的进行，kernel.elf 会越来越大，比如说大到 0x200000,那么kernel.elf中.bss段中的变量地址也很接近 0x200000，那么存放kernel.elf的0x60000起始的物理地址，将会和解析后kernel.elf代码段及.bss 端重合将导致未知错误，所以我们需要使用grub2帮我们处理这部分传统BootLoader需要做的工作，使用grub2后我们只要专心开发内核就行，至于我们上面说的kernel.elf的存放和解析则都由grub2完成。
 
 
 ### grub2核心
@@ -260,7 +262,7 @@ halt_message:
 
 ```
 
-完成以上两步后，我们的kernel.elf 就是具备grub2能力的，可以被grub2加载
+完成以上两步后，我们的kernel.elf 就是具备grub2能力的文件，可以被grub2加载
 
 #### 3.设置kernel.elf的grub2载体
 
@@ -277,3 +279,54 @@ iso:
 ```
 make qemu
 ```
+
+<span id="CMake_id"></span>
+## CMake
+
+使用[CMake](https://cmake.org/cmake/help/v3.22/) 对操作系统源文件进行组织
+
+### 使用:
+```
+cd CMake
+cmake ./
+make iso
+make qemu
+```
+### 优点:
+老牌大厂，稳定可靠，功能齐全
+
+### 缺点:
+到现在为止，我们编辑源文件还是很困难的，如果能将工程集成到 XCode、Visual Stdio 这样的IDE进行编辑，同时可以进行方法跳转、界面调试将能大大提高开发效率
+
+<span id="IDE_id"></span>
+## IDE
+
+### XCode
+
+### 使用:
+```
+cd IDE
+./run_cmake.sh
+```
+打开 build 文件夹下的 simpleOS.xcodeproj 工程，选择 `kernel` target,直接运行即可，我们看到，一个简单的XCode运行按钮，我们就完成了qemu启动，及lldb连接调试，我们在lldb命令界面执行`c`命令即可完成我们系统的运行，从下图可以看到，我们的源文件已经成树状结构在XCode中展示出来，同时方法名也高亮了，可以进行跳转
+
+![XCode效果](./IDE/pic/xcode_1.png)
+
+
+### 优点:
+工程更加直观，具备方法跳转、方法名高亮、全局查找、一键调试等优点
+
+
+
+
+
+
+# 待做:
+
+如果你看到了这里，可以发现我们的操作系统开发方式较之前高效了很多，但是我们还没实现界面调试的功能，我们不能像IDE本身平台工程那样给我们操作系统工程下断点，这个功能如果实现了，我们的开发效率将会到达一个新的高度。
+以XCode为例，XCode默认的调试器是lldb，我们现在也实现了用lldb调试我们的内核kernel.elf,就是无法将断点映射到图形界面上，从理论上来说，这是可行的，由于本人技术有限，暂时无法实现，还请各位大神一起群策群力,加入qq群大家一起交流提高开发操作系统的效率。
+
+## qq群:
+开发效率群:809565047
+
+![开发效率群](./IDE/pic/qq群.png)
