@@ -28,21 +28,13 @@ put_str_test:
 ;(DL,DH) = 窗口右下角的(X,Y)位置
 ;无返回值
 
-    ; 输出背景色绿色，前景色红色，并且跳动的字符串"1 MBR"
-         mov ebx,VIDEO_BASE
-         
-    mov byte [ebx],'b'
-    inc di
-    mov byte [0xb8001],0xa4
-
-    mov byte [0xb8002],'o'
-    mov byte [0xb8003],0xa4
-    
-    mov byte [0xb8004],'o'
-    mov byte [0xb8005],0xa4
-
-    mov byte [0xb8006],'t'
-    mov byte [0xb8007],0xa4
+    mov ax, 0600h
+    mov bx, 0700h
+    mov cx, 0            ;左上角:  (0,0)
+    mov dx, 184fh        ;右下角:(80,25),
+                ; VGA文本模式中，一行只能容纳80个字符，共25行
+                ; 下标从0开始，所以0x18=24,0x4f=79
+    int 10h              ;int 10h
     ret
 global put_str
 put_str:
@@ -65,6 +57,15 @@ pop ecx
 pop ebx
 ret 
 
+global clear_screen
+clear_screen:
+mov ebx,VIDEO_BASE
+mov ecx, 0x10000              
+.cls:
+mov word [gs:ebx], 0x0720; 0x0720 是黑底白字的空格键
+add ebx, 2
+loop .cls 
+ret
 ;------------------------------- put_char --------------------------
 ;功能描述：把栈中的 1 个字符写入光标所在处
 ;-------------------------------------------------------------------

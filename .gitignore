@@ -54,4 +54,5 @@ dkms.conf
 
 *.bin
 *.img
+*.iso
 bootloader/debug/qemu.txt
