@@ -1,5 +1,6 @@
 AS = nasm 
 ASFLAGS = -f elf
+CC = i386-elf-gcc
 CFLAGS = -I ./ -march=i386 -c -o
 ########################   汇编代码编译   ####################
 mbr.bin:mbr.asm

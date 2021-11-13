@@ -1,7 +1,7 @@
 ifeq ($(include_Makefile_env),)
 include_Makefile_env:=1
 
-PHONY		=
+.PHONY		=
 all:
 
 # Do not:
