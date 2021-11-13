@@ -38,4 +38,4 @@ QEMU_GDB_OPT := -S -gdb tcp::10001,ipv4
 qemu:
 	$(QEMU) $(QEMU_ARG) $(SIMPLEISO)
 
-all:clean $(TARGET) iso bochs
+all:clean $(TARGET) iso
