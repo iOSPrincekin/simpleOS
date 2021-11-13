@@ -5,10 +5,14 @@
 
 阅读本工程之前，你应该具备基础的操作系统知识，本工程不会探讨具体的操作系统知识，旨在探讨和研究如何解决开发操作系统过程中遇到的效率问题，怎么使用现有的工具来提高开发和调试操作系统的效率，如何提高操作系统的开发体验
 
-本工程主要由以下四个模块组成:<a href="#bootloader_id">bootloader</a>、<a href="#xbuild_id">xbuild</a>、<a href="#grub2_id">grub2</a>、
+本工程主要由以下五个模块组成:<a href="#bootloader_id">bootloader</a>、<a href="#xbuild_id">xbuild</a>、<a href="#grub2_id">grub2</a>、
 <a href="#CMake_id">CMake</a>、<a href="#IDE_id">IDE</a>
 
 <span id="bootloader_id"></span>
+
+这个五个模块是一个从低效到高效的过程，用一张图可以更加形象的表示
+
+![人类进化图](./pic/人类进化图.png)
 ## bootloader
 
 使用makefile 进行组织
@@ -310,7 +314,7 @@ cd IDE
 ```
 打开 build 文件夹下的 simpleOS.xcodeproj 工程，选择 `kernel` target,直接运行即可，我们看到，一个简单的XCode运行按钮，我们就完成了qemu启动，及lldb连接调试，我们在lldb命令界面执行`c`命令即可完成我们系统的运行，从下图可以看到，我们的源文件已经成树状结构在XCode中展示出来，同时方法名也高亮了，可以进行跳转
 
-![XCode效果](./IDE/pic/xcode_1.png)
+![XCode效果](./pic/xcode_1.png)
 
 
 ### 优点:
@@ -329,4 +333,4 @@ cd IDE
 ## qq群:
 开发效率群:809565047
 
-![开发效率群](./IDE/pic/qq群.png)
+![开发效率群](./pic/qq群.png)
