@@ -28,7 +28,7 @@ set CMAKE_BUILD_TYPE=Debug
 
 if not exist "%CMAKE_BUILD_DIR%" mkdir "%CMAKE_BUILD_DIR%"
 pushd "%CMAKE_BUILD_DIR%" && ^
-cmake -G "%CMAKE_GENERATOR%" ^
+cmake -G "%CMAKE_GENERATOR%" -G "Unix Makefiles" ^
     -Wno-dev ^
     -DCMAKE_BUILD_TYPE="%CMAKE_BUILD_TYPE%" ^
     -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG="%CMAKE_DEBUG_OUTPUT%" ^
