@@ -1,7 +1,9 @@
+sinclude ../define.mk
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 AS 	:= nasm 
 ASFLAGS 	:= -f elf
-CC 	:= i386-elf-gcc
-CFLAGS 	:= -I ./ -march=i386 -c -o
+CFLAGS 	:= -march=i386 -I$(ROOT_DIR) -c -o
+
 
 TARGET	:= kernel.elf
 $(TARGET):boot.S main.c print.asm hierarchy1/hierarchy1.c hierarchy1/hierarchy2/hierarchy2.c hierarchy1/hierarchy2/hierarchy3/hierarchy3.c
@@ -11,7 +13,7 @@ $(TARGET):boot.S main.c print.asm hierarchy1/hierarchy1.c hierarchy1/hierarchy2/
 	$(CC) $(CFLAGS) hierarchy1/hierarchy1.o hierarchy1/hierarchy1.c
 	$(CC) $(CFLAGS) hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy2.c
 	$(CC) $(CFLAGS) hierarchy1/hierarchy2/hierarchy3/hierarchy3.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.c
-	i386-elf-ld -no-pie -m elf_i386 boot.o main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0x100000 -o kernel.elf
+	$(LD) -no-pie -m elf_i386 boot.o main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0x100000 -o kernel.elf
 
 
 
@@ -21,7 +23,7 @@ clean:
 
 iso:
 	cp	$(TARGET) isofiles/boot/
-	grub-mkrescue -o simpleOS.iso isofiles
+	$(MKISOFS) $(MKISOFS_FLAGS) simpleOS.iso isofiles
 	
 
 SIMPLEISO	= simpleOS.iso

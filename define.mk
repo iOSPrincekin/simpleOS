@@ -63,9 +63,25 @@ export ECHO_RM ECHO_CC ECHO_CXX ECHO_AS ECHO_LD ECHO_AR ECHO_OUTPUT ECHO_HOSTCC
 ifeq ($(shell uname),Darwin)
 	# MacOS 
 	CROSS_COMPILE	?= i386-elf-
+	MKISOFS         ?=grub-mkrescue
 else
 	CROSS_COMPILE	?=
+	MKISOFS         ?=genisoimage
 endif
+
+BOOT_DIR      = boot
+GRUB_DIR      = $(BOOT_DIR)/grub
+GRUB_ELTORITO = $(BOOT_DIR)/stage2_eltorito
+MKISOFS_FLAGS		:= -graft-points \
+		-input-charset utf8 \
+		-sysid "" \
+		-appid "" \
+		-volid "simpleOS" \
+		-R \
+		-no-emul-boot \
+		-boot-load-size 4 \
+		-boot-info-table -b $(GRUB_ELTORITO) \
+		-o
 
 # Make variables (CC, etc...)
 AS			:=	$(CROSS_COMPILE)gcc -x assembler-with-cpp
