@@ -3,18 +3,20 @@ cmake_minimum_required(VERSION 3.5)
 
 ########################################################## host 环境配置 开始 ##############################################
 
-
-
-	set(CROSS_COMPILE)
-
-#set(MKISOFS       mkisofs)
+if (APPLE)
+set(CROSS_COMPILE i386-elf-)
+set(MKISOFS       grub-mkrescue)
+else()
+set(CROSS_COMPILE)
 set(MKISOFS       genisoimage)
+endif()
+
 if (WIN32)
     message(STATUS "windows 平台！！！")
 endif (WIN32)
 
 # Make variables (CC, etc...)
-set(AS				"${CROSS_COMPILE}gcc")
+set(AS				${CROSS_COMPILE}gcc)
 set(CC				${CROSS_COMPILE}gcc)
 set(CPP				${CROSS_COMPILE}gcc -E)
 set(CXX				${CROSS_COMPILE}g++)
@@ -136,7 +138,7 @@ set(MKDIR	 	${CMAKE_COMMAND} -E make_directory)
 set(OBJDUMP		objdump)
 
 #生成 .iso 文件
-add_custom_target(iso
+add_custom_target(iso DEPENDS ${target}
 )
 
 add_custom_command(
@@ -153,7 +155,7 @@ set(OS_NAME simpleOS.iso)
 set(QEMU qemu-system-i386)
 set(QEMU_ARG "-cdrom")
 
-add_custom_target(qemu
+add_custom_target(qemu DEPENDS iso
 )
 
 add_custom_command(
