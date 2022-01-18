@@ -19,7 +19,7 @@ $(TARGET):boot.S main.c print.asm hierarchy1/hierarchy1.c hierarchy1/hierarchy2/
 
 
 clean:
-	rm -rf *.o *.elf
+	rm -rf *.o *.elf *.iso
 
 iso:
 	cp	$(TARGET) isofiles/boot/
