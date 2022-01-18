@@ -1,7 +1,10 @@
+sinclude ../define.mk
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
 AS 	:= nasm 
 ASFLAGS 	:= -f elf
-CC 	:= i386-elf-gcc
-CFLAGS 	:= -I ./ -march=i386 -c -o
+
+CFLAGS 	:= -v -march=i386 -I$(ROOT_DIR) -c -o
 ########################   汇编代码编译   ####################
 mbr.bin:mbr.asm
 	$(AS) $< -o $@
@@ -13,7 +16,7 @@ kernel.elf:main.c print.asm hierarchy1/hierarchy1.c hierarchy1/hierarchy2/hierar
 	$(CC) $(CFLAGS) hierarchy1/hierarchy1.o hierarchy1/hierarchy1.c
 	$(CC) $(CFLAGS) hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy2.c
 	$(CC) $(CFLAGS) hierarchy1/hierarchy2/hierarchy3/hierarchy3.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.c
-	i386-elf-ld -no-pie -m elf_i386 main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0xc0001500 -e main -o kernel.elf
+	${LD} -no-pie -m elf_i386 main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0xc0001500 -e main -o kernel.elf
 
 A_IMG := ./image/a.img
 
@@ -24,8 +27,9 @@ cp:
 	cp loader.bin ../../
 
 disk:
-	mkdir debug
-	bximage -hd=10M -imgmode="flat" -mode=create -sectsize=512 -q $(A_IMG)
+	if [ -d "debug" ]; then echo "debug Dir exists"; else mkdir debug; fi
+	if [ -d "image" ]; then echo "image Dir exists"; else mkdir image; fi
+	bximage -hd=10M -imgmode="flat" -mode=create -q $(A_IMG)
 
 hd:     
 	dd if=mbr.bin	\
@@ -46,6 +50,7 @@ clean:
 	rm -f loader.bin
 	rm -f kernel.elf
 	rm -rf debug
+	rm -rf image
 	rm -rf *.o
 
 
