@@ -1,6 +1,43 @@
-cmake_minimum_required(VERSION 3.5)
+﻿cmake_minimum_required(VERSION 3.5)
 
 
+########################################################## host 环境配置 开始 ##############################################
+
+if (APPLE)
+set(CROSS_COMPILE i386-elf-)
+set(MKISOFS       grub-mkrescue)
+else()
+set(CROSS_COMPILE)
+set(MKISOFS       genisoimage)
+endif()
+
+set(BOOT_DIR       boot)
+set(GRUB_DIR       ${BOOT_DIR}/grub)
+set(GRUB_ELTORITO  ${BOOT_DIR}/stage2_eltorito)
+
+set(MKISOFS_FLAGS -graft-points -input-charset utf8 -sysid "" -appid "" -volid "simpleOS" -R -no-emul-boot -boot-load-size 4 -boot-info-table -b ${GRUB_ELTORITO} -o)
+
+
+
+if (WIN32)
+    message(STATUS "windows 平台！！！")
+endif (WIN32)
+
+# Make variables (CC, etc...)
+set(AS				${CROSS_COMPILE}gcc)
+set(CC				${CROSS_COMPILE}gcc)
+set(CPP				${CROSS_COMPILE}gcc -E)
+set(CXX				${CROSS_COMPILE}g++)
+set(LD				${CROSS_COMPILE}ld)
+set(AR				${CROSS_COMPILE}ar)
+set(OC				${CROSS_COMPILE}objcopy)
+set(OD				${CROSS_COMPILE}objdump)
+set(NM				${CROSS_COMPILE}nm)
+
+set(HOSTCC			gcc)
+
+
+########################################################## host 环境配置 结束 ##############################################
 
 # 工程名称
 project(simpleOS)
@@ -14,20 +51,20 @@ enable_language(C ASM ASM_NASM)
 
 set(CMAKE_C_FLAGS_LIST "-c -march=i386 -fno-builtin -Wall -Wunused -fno-PIE -m32 -std=gnu99 -fno-stack-protector")
 # C 语言 .c
-set(CMAKE_C_COMPILER i386-elf-gcc)
+set(CMAKE_C_COMPILER ${CC})
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS_LIST})
 set(CMAKE_C_LINK_FLAGS "-m elf_i386 -v -Ttext 0x100000")
-set(CMAKE_C_LINKER i386-elf-ld)
+set(CMAKE_C_LINKER ${LD})
 set(CMAKE_C_LINK_EXECUTABLE  "${CMAKE_C_LINKER} <CMAKE_C_LINK_FLAGS>  <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 
 
 
 # ASM 语言 .S
 set(CMAKE_ASM_SOURCE_FILE_EXTENSIONS S)
-set(CMAKE_ASM_COMPILER i386-elf-gcc)
+set(CMAKE_ASM_COMPILER ${AS})
 set(CMAKE_ASM_FLAGS "-x assembler-with-cpp")
 set(CMAKE_ASM_LINK_FLAGS "-m elf_i386")
-#set(CMAKE_ASM_LINKER i386-elf-ld)
+#set(CMAKE_ASM_LINKER ${LD})
 
 # ASM NASM 语言 .asm 
 set(CMAKE_ASM_NASM_SOURCE_FILE_EXTENSIONS asm)
@@ -55,17 +92,6 @@ define_property(
 
 #编译 kernel.elf
 set(target kernel.elf)
-set(OS_NAME simpleOS)
-
-#QEMU
-set(QEMU qemu-system-i386)
-set(QEMU_ARG "-cdrom")
-
-#LLDB
-set(LLDB lldb)
-set(LLDB_FULL /usr/bin/lldb)
-#iTerm.app
-set(iTerm /Applications/iTerm.app)
 
 include_directories(./)
 
@@ -111,19 +137,6 @@ add_executable(${target}
 	 ${SOURCE}
 )
 
-set(KERNEL_AGGREGATE kernel)
-add_custom_target(${KERNEL_AGGREGATE}
-)
-
-add_custom_command(
-TARGET ${KERNEL_AGGREGATE} POST_BUILD
-COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}
-COMMAND make
-COMMAND make iso
-COMMAND osascript -e \"tell application \\\"Terminal\\\" to do script \\\"cd ${CMAKE_CURRENT_SOURCE_DIR}\\n ${LLDB} ${target}\\n gdb-remote localhost:1234\\\"\" -e 'tell application \"Terminal\" to activate' -e 'tell application \"System Events\" to tell process \"Terminal\" to keystroke \"t\" using command down' -e 'tell application \"Terminal\" to set background color of window 1 to {0,0,0,1}' -e \"tell application \\\"Terminal\\\" to do script \\\"cd ${CMAKE_CURRENT_SOURCE_DIR}\\n ${QEMU} -s -S -m 512m -name \"${OS_NAME}\" -serial stdio -cdrom ${OS_NAME}.iso\\\" in window 1\" 
-)
-
-
 ## 工具
 set(TRUNC		truncate)
 set(CP			${CMAKE_COMMAND} -E copy)
@@ -138,22 +151,24 @@ add_custom_target(iso DEPENDS ${target}
 
 add_custom_command(
 TARGET iso POST_BUILD
-COMMAND pwd
 COMMAND ${CP} ${target} ./isofiles/boot
-COMMAND grub-mkrescue -o simpleOS.iso isofiles
+COMMAND ${MKISOFS} ${MKISOFS_FLAGS} simpleOS.iso isofiles
 )
 
 
 #qemu启动
 
+#QEMU
+set(OS_NAME simpleOS.iso)
+set(QEMU qemu-system-i386)
+set(QEMU_ARG "-cdrom")
 
-
-add_custom_target(qemu
+add_custom_target(qemu DEPENDS iso
 )
 
 add_custom_command(
 TARGET qemu POST_BUILD
-COMMAND ${QEMU} ${QEMU_ARG} ${OS_NAME}.iso
+COMMAND ${QEMU} ${QEMU_ARG} ${OS_NAME}
 )
 
 

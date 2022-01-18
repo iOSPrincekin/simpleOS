@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+﻿cmake_minimum_required(VERSION 3.5)
 
 
 ########################################################## host 环境配置 开始 ##############################################
@@ -10,6 +10,14 @@ else()
 set(CROSS_COMPILE)
 set(MKISOFS       genisoimage)
 endif()
+
+set(BOOT_DIR       boot)
+set(GRUB_DIR       ${BOOT_DIR}/grub)
+set(GRUB_ELTORITO  ${BOOT_DIR}/stage2_eltorito)
+
+set(MKISOFS_FLAGS -graft-points -input-charset utf8 -sysid "" -appid "" -volid "simpleOS" -R -no-emul-boot -boot-load-size 4 -boot-info-table -b ${GRUB_ELTORITO} -o)
+
+
 
 if (WIN32)
     message(STATUS "windows 平台！！！")
@@ -144,7 +152,7 @@ add_custom_target(iso DEPENDS ${target}
 add_custom_command(
 TARGET iso POST_BUILD
 COMMAND ${CP} ${target} ./isofiles/boot
-COMMAND ${MKISOFS} 	-graft-points	-input-charset utf8 -R -o simpleOS.iso isofiles
+COMMAND ${MKISOFS} ${MKISOFS_FLAGS} simpleOS.iso isofiles
 )
 
 
