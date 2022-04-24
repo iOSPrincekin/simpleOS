@@ -19,7 +19,8 @@ kernel.elf:main.c print.asm hierarchy1/hierarchy1.c hierarchy1/hierarchy2/hierar
 
 	${LD} -no-pie -m elf_i386 main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0xc0001500 -e main -o kernel.elf
 
-A_IMG := ./image/a.img
+IMAGE_DIR	:=./image
+A_IMG	:= ${IMAGE_DIR}/a.img
 
 .PHONY:rm cp hd clean qemu all 
 
@@ -29,11 +30,13 @@ cp:
 	cp mbr.bin ../../
 	cp loader.bin ../../
 
-disk:
-	if [ -d "debug" ]; then echo "debug Dir exists"; else mkdir debug; fi
-	if [ -d "image" ]; then echo "image Dir exists"; else mkdir image; fi
-	bximage -hd=10M -imgmode="flat" -mode=create -q $(A_IMG)
+DEBUG = debug
 
+disk:
+	[ -d "${DEBUG}" ] &&  echo "Directory ${DEBUG} found." || (echo "create ${DEBUG}"; mkdir ${DEBUG})
+	[ -d "${IMAGE_DIR}" ] &&  echo "Directory ${IMAGE_DIR} found." || (echo "create ${IMAGE_DIR}"; mkdir ${IMAGE_DIR})
+	[ -f "${A_IMG}" ] &&  echo "file ${A_IMG} found." || (echo "create ${A_IMG}"; bximage -hd=10M -imgmode="flat" -mode=create -q $(A_IMG))
+	echo $@
 hd:     
 	dd if=mbr.bin	\
 	of=$(A_IMG)	\
