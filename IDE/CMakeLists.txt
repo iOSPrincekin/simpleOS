@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5)
 
 
 ########################################################## host 环境配置 开始 ##############################################
@@ -145,16 +145,6 @@ set(DD			dd)
 set(MKDIR	 	${CMAKE_COMMAND} -E make_directory)
 set(OBJDUMP		objdump)
 
-#生成 .iso 文件
-add_custom_target(iso DEPENDS ${target}
-)
-
-add_custom_command(
-TARGET iso POST_BUILD
-COMMAND ${CP} ${target} ./isofiles/boot
-COMMAND ${MKISOFS} ${MKISOFS_FLAGS} simpleOS.iso isofiles
-)
-
 
 #qemu启动
 
@@ -163,13 +153,17 @@ set(OS_NAME simpleOS.iso)
 set(QEMU qemu-system-i386)
 set(QEMU_ARG "-cdrom")
 
-add_custom_target(qemu DEPENDS iso
+add_custom_target(qemu
 )
 
 add_custom_command(
 TARGET qemu POST_BUILD
+COMMAND cd ../
+COMMAND make
+COMMAND ${CP} ${target} ./isofiles/boot
+COMMAND ${MKISOFS} ${MKISOFS_FLAGS} simpleOS.iso isofiles
 COMMAND ${QEMU} ${QEMU_ARG} ${OS_NAME}
-)
 
+)
 
 
