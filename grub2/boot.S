@@ -57,40 +57,8 @@ multiboot_header:
 		.long   -(MULTIBOOT2_HEADER_MAGIC + GRUB_MULTIBOOT_ARCHITECTURE_I386 + (multiboot_header_end - multiboot_header))
 		.long   0
 		.long   8
-#ifndef __ELF__
-address_tag_start:      
-		.short MULTIBOOT_HEADER_TAG_ADDRESS
-		.short MULTIBOOT_HEADER_TAG_OPTIONAL
-		.long address_tag_end - address_tag_start
-		/*  header_addr */
-		.long   multiboot_header
-		/*  load_addr */
-		.long   _start
-		/*  load_end_addr */
-		.long   _edata
-		/*  bss_end_addr */
-		.long   _end
-address_tag_end:
-entry_address_tag_start:        
-		.short MULTIBOOT_HEADER_TAG_ENTRY_ADDRESS
-		.short MULTIBOOT_HEADER_TAG_OPTIONAL
-		.long entry_address_tag_end - entry_address_tag_start
-		/*  entry_addr */
-		.long multiboot_entry
-entry_address_tag_end:
-#endif /*  __ELF__ */
-framebuffer_tag_start:  
-		.short MULTIBOOT_HEADER_TAG_FRAMEBUFFER
-		.short MULTIBOOT_HEADER_TAG_OPTIONAL
-		.long framebuffer_tag_end - framebuffer_tag_start
-		.long 1024
-		.long 768
-		.long 32
-framebuffer_tag_end:
-		.short MULTIBOOT_HEADER_TAG_END
-		.short 0
-		.long 8
 multiboot_header_end:
+
 multiboot_entry:
 		/*  Initialize the stack pointer. */
 		movl    $(stack + STACK_SIZE), %esp
