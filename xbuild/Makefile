@@ -1,22 +1,40 @@
-sinclude scripts/define.mk
+
+sinclude scripts/env.mk
 
 
-#变量
 
-IMAGE_DIR	:= ./image
+X_LDFLAGS	:= -no-pie -m elf_i386 -Ttext 0xc0001500 -e main
+X_INCDIRS	:= ./
+X_ASFLAGS	:= -f elf
 
-A_IMG	:= ${IMAGE_DIR}/a.img
 
-KERNEL_DIR	:= ./kernel
 
-KERNEL_ELF	:= ${KERNEL_DIR}/kernel.elf
+NAME		:=	kernel.elf
+SRC			+=	main.c print.asm
+SRC			+= hierarchy1/
+
+define CUSTOM_TARGET_CMD
+echo [$(NAME)] $@; \
+$(LD) $(X_LDFLAGS) -o $(obj)/$(NAME) $(X_OBJS)
+endef
+
+
+A_IMG := ./image/a.img
+
+
+
+
+clean:
+	rm -f $(A_IMG)
+	rm -f mbr.bin 
+	rm -f loader.bin
+	rm -f kernel.elf
+	rm -rf debug
+	rm -rf *.o
+
 
 
 DEBUG = debug
-
-
-#target
-
 
 disk:
 	[ -d "${DEBUG}" ] &&  echo "Directory ${DEBUG} found." || (echo "create ${DEBUG}"; mkdir ${DEBUG})
@@ -30,11 +48,7 @@ mbr.bin:mbr.asm
 loader.bin:loader.asm
 	$(AS) $< -o $@
 
-kernel:
-	@$(MAKE) -s -C $(KERNEL_DIR)
-
-
-hd: mbr.bin loader.bin 
+hd: FORCE mbr.bin loader.bin 
 	dd if=mbr.bin	\
 	of=$(A_IMG)	\
 	bs=512 count=1 seek=0 conv=notrunc
@@ -43,12 +57,12 @@ hd: mbr.bin loader.bin
 	of=$(A_IMG)	\
 	bs=512 count=4 seek=2 conv=notrunc
 
-	dd if=$(KERNEL_ELF)  \
+	dd if=kernel.elf  \
 	of=$(A_IMG) \
 	bs=512 count=200 seek=9 conv=notrunc
 
 
-build: disk mbr.bin loader.bin kernel hd
+build: disk mbr.bin loader.bin 
 	echo $@
 
 
@@ -58,29 +72,20 @@ QEMU 		= qemu-system-i386
 QEMU_ARG		=
 QEMU_GDB_OPT := -S -gdb tcp::10001,ipv4
 # 调试配置：-S -gdb tcp::10001,ipv4
-qemu: build
+qemu: $(A_IMG)
 	$(QEMU) $(QEMU_ARG) $(A_IMG)
 
 qemudbg: $(A_IMG) 
 	$(QEMU) $(QEMU_ARG) $(QEMU_GDB_OPT) $(A_IMG)
 
-
-
-bochs:
-	bochs -f bochsrc
+$(A_IMG): build hd
 
 
 
+FORCE: ;
 
-clean:
-	rm -f $(A_IMG)
-	rm -f mbr.bin 
-	rm -f loader.bin
-	rm -f $(KERNEL_ELF)
-	$(MAKE) -s -C $(KERNEL_DIR) clean
-	rm -rf debug
-	rm -rf *.o
+.PHONY : FORCE
 
 
 
-.PHONY: kernel
+

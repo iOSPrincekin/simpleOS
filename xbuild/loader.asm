@@ -37,29 +37,7 @@ ards_buf times 244 db 0
 ards_nr  dw 0                       ;用于记录 ARDS 结构体数量
 
 loader_start:
-LOADER_TEXT_BASE_ADDR equ 0x140     ;相当于(CODE_DESC - GDT_BASE)/8 + TI_GDT + RPL0
-LOADER_TEXT_BASE_ATTRIBUTE  equ 0x4A
-;--------------------- 0.显示loader -----------------------------------
-    ; 输出背景色绿色，前景色红色，并且跳动的字符串"1 MBR"
-    mov byte [gs:LOADER_TEXT_BASE_ADDR],'l'
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+1],LOADER_TEXT_BASE_ATTRIBUTE
-
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+2],'o'
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+3],LOADER_TEXT_BASE_ATTRIBUTE
-    
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+4],'a'
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+5],LOADER_TEXT_BASE_ATTRIBUTE
-
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+6],'d'
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+7],LOADER_TEXT_BASE_ATTRIBUTE
-    
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+8],'e'
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+9],LOADER_TEXT_BASE_ATTRIBUTE
-    
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+10],'r'
-    mov byte [gs:LOADER_TEXT_BASE_ADDR+11],LOADER_TEXT_BASE_ATTRIBUTE
-    
-;--------------------- 1.加载 kernel -----------------------------------
+;------------------------------------  加载 kernel  -------------------------------
 
 mov eax, KERNEL_BIN_BASE_ADDR_SEG
 mov si, KERNEL_START_SECTOR
@@ -69,7 +47,7 @@ xor ebx, ebx
 call read_sectors
 
 
-;-------------------- 2.通过 int 15h eax = 0000E820h, edx = 534D4150h ('SMAP') 获取内存布局 --------
+; int 15h eax = 0000E820h, edx = 534D4150h ('SMAP') 获取内存布局
 
 xor ebx,ebx                 ;第一次调用时，ebx值要为0
 mov edx, 0x534d4150         ;edx 只赋值一次，循环体中不会改变
@@ -144,23 +122,23 @@ add edx, 0x100000                ;0x88 子功能只会返回到 1MB 以上的内
 mov [total_mem_bytes], edx     ;将内存换为 byte 单位后存入 total_mem_bytes 处 
 
 
-;------------------- 3.准备进入保护模式 ------------------
+;------------------- 准备进入保护模式  ------------------------
 ;0 关闭中断
 ;1 打开A20
 ;2 加载gdt
 ;3 将cr0的pe位置1
 cli ;close the interruption
-;------------------- 3.1 打开A20 ----------------------
+;------------------- 打开A20 ----------------------
 in al,0x92
 or al,0000_0010b
 out 0x92,al
 
-;------------------- 3.2 加载GDT --------------------
+;------------------- 加载GDT --------------------
 lgdt [gdt_ptr]
 
 
 
-;------------------- 3.3 cr0第0位置1 -----------------
+;------------------- cr0第0位置1 -----------------
 mov eax,cr0
 or eax,0x00000001
 
@@ -169,7 +147,6 @@ mov cr0,eax
 .jump_test:
 ;jmp .jump_test
 
-;------------------ 4.跳转至 保护模式 -----------------
 jmp word SELECTOR_CODE:p_mode_start        ; 刷新流水线,避免分支预测的影响，这种cpu优化策略，最怕jmp跳转，
                                   ; 这将导致之前做的预测失效，从而起了刷新的作用。
 .error_hlt:		      ;出错则挂起
@@ -245,7 +222,7 @@ read_sectors:
 	ret
 
 
-;------------------ 5.保护模式，代码开始 -----------------------
+
 [bits 32]
 p_mode_start:
 mov ax,SELECTOR_DATA
@@ -257,10 +234,10 @@ mov ax,SELECTOR_VIDEO
 mov gs,ax
 
 
-;5.1 创建页目录及页表并初始化页内存位图
+;创建页目录及页表并初始化页内存位图
 call setup_page
 
-;5.2 要将描述符地址及偏移量写入内存 gdt_ptr,修改后，一会儿用新地址重新加载
+;要将描述符地址及偏移量写入内存 gdt_ptr,一会儿用新地址重新加载
 sgdt [gdt_ptr]          ;存储到原来 gdt 所有的位置
 
 ;将 gdt 描述符中视频段描述符中的段基址 + 0xc0000000
@@ -271,21 +248,19 @@ or dword [ebx + 0x18 + 4], 0xc0000000    ;视频段是第3个段描述符,每个
  ;将gdt的基址加上0xc0000000使其成为内核所在的高地址
 add dword [gdt_ptr + 2], 0xc0000000
 
-;5.3 将修改后的基于 保护模式高地址的 gdt 重新加载
-lgdt [gdt_ptr]         ; 重新加载
-
 add esp, 0xc0000000        ; 将栈指针同样映射到内核地址
 
-;5.4 把页目录·地址赋值给 cr3
+;把页目录·地址赋值给 cr3
 mov eax, PAGE_DIR_TABLE_POS
 mov cr3, eax
 
-;5.5 打开 cr0 的pg位 (第 31 位)
+;打开 cr0 的pg位 (第 31 位)
 mov eax, cr0
 or eax, 0x80000000
 mov cr0, eax
 
-
+;在开启分页后，用 gdt 新的地址重新加载
+lgdt [gdt_ptr]         ; 重新加载
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  此时不刷新流水线也没问题  ;;;;;;;;;;;;;;;;;;;;;;;
 ;由于一直处在 32 位下，原则上不需要强制刷新，经过实际测试以下两句也没问题.
