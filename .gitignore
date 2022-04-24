@@ -57,7 +57,8 @@ dkms.conf
 *.iso
 bootloader/debug/qemu.txt
 
-
+#xbuild
+xbuild/fixdep
 
 #cmake 
 *.cmake

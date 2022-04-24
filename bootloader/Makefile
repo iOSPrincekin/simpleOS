@@ -16,12 +16,15 @@ kernel.elf:main.c print.asm hierarchy1/hierarchy1.c hierarchy1/hierarchy2/hierar
 	$(CC) $(CFLAGS) hierarchy1/hierarchy1.o hierarchy1/hierarchy1.c
 	$(CC) $(CFLAGS) hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy2.c
 	$(CC) $(CFLAGS) hierarchy1/hierarchy2/hierarchy3/hierarchy3.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.c
+
 	${LD} -no-pie -m elf_i386 main.o print.o hierarchy1/hierarchy1.o hierarchy1/hierarchy2/hierarchy2.o hierarchy1/hierarchy2/hierarchy3/hierarchy3.o -Ttext 0xc0001500 -e main -o kernel.elf
 
 A_IMG := ./image/a.img
 
 .PHONY:rm cp hd clean qemu all 
 
+debug:
+	mkdir debug
 cp:
 	cp mbr.bin ../../
 	cp loader.bin ../../
@@ -68,7 +71,7 @@ QEMU 		= qemu-system-i386
 QEMU_ARG		= -d int -D debug/qemu.txt
 QEMU_GDB_OPT := -S -gdb tcp::10001,ipv4
 # 调试配置：-S -gdb tcp::10001,ipv4
-qemu:
+qemu: all
 	$(QEMU) $(QEMU_ARG) $(A_IMG)
 qemudbg:
 	$(QEMU) $(QEMU_ARG) $(QEMU_GDB_OPT) $(A_IMG)
@@ -79,5 +82,5 @@ gdb:
 	gdb
 
 
-all: clean disk build  hd 
+all: clean debug disk build  hd 
 
