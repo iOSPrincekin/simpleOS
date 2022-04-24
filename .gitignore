@@ -59,6 +59,7 @@ bootloader/debug/qemu.txt
 
 #xbuild
 xbuild/fixdep
+xbuild/kernel/fixdep
 
 #cmake 
 *.cmake
