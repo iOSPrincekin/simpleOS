@@ -49,7 +49,7 @@ set(CMAKE_DEBUG YES)
 enable_language(C ASM ASM_NASM)
 
 
-set(CMAKE_C_FLAGS_LIST "-c -march=i386 -fno-builtin -Wall -Wunused -fno-PIE -m32 -std=gnu99 -fno-stack-protector")
+set(CMAKE_C_FLAGS_LIST "-c -march=i386 -fno-builtin -Wall -Wunused -fno-PIE -m32 -std=gnu99 -fno-stack-protector -g")
 # C 语言 .c
 set(CMAKE_C_COMPILER ${CC})
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS_LIST})
@@ -149,12 +149,25 @@ set(OBJDUMP		objdump)
 #qemu启动
 
 #QEMU
-set(OS_NAME simpleOS.iso)
+set(OS_NAME simpleOS)
 set(QEMU qemu-system-i386)
 set(QEMU_ARG "-cdrom")
 
 add_custom_target(qemu
 )
+
+set(HOST_PSW "lh1992524")
+
+#QEMU
+set(SUDO sudo -S <<< ${HOST_PSW})
+
+#LLDB
+set(LLDB lldb)
+set(LLDB_FULL /usr/bin/lldb)
+
+set(SUDO_QEMU ${SUDO} ${QEMU})
+set(QEMU_ARGUMENT -s -S -m 512m -name \"${OS_NAME}\" -serial stdio -cdrom ./${OS_NAME}.iso)
+
 
 add_custom_command(
 TARGET qemu POST_BUILD
@@ -162,8 +175,27 @@ COMMAND cd ../
 COMMAND make
 COMMAND ${CP} ${target} ./isofiles/boot
 COMMAND ${MKISOFS} ${MKISOFS_FLAGS} simpleOS.iso isofiles
-COMMAND ${QEMU} ${QEMU_ARG} ${OS_NAME}
 
+COMMAND ${SUDO} osascript -e \"tell application \\\"Terminal\\\" to quit\"
+COMMAND osascript -e \"tell application \\\"Terminal\\\" 
+to do script \\\"cd ${CMAKE_CURRENT_SOURCE_DIR}\\n ${SUDO} pkill -f '${QEMU}'\\n ${LLDB} ${target}\\n  gdb-remote localhost:1234\\\"\" 
+-e 'tell application \"Terminal\" to activate' 
+-e 'tell application \"System Events\" to tell process \"Terminal\" to keystroke \"t\" using command down' 
+-e 'tell application \"Terminal\" to set background color of window 1 to {0,0,0,1}' 
+-e \"tell application \\\"Terminal\\\" 
+to do script \\\"cd ${CMAKE_CURRENT_SOURCE_DIR}\\n sleep 0.1\\n ${SUDO_QEMU} ${QEMU_ARGUMENT}\\\" in window 1\" 
 )
 
+
+#定义 clean target
+set(CLEAN_TARGET clean_)
+add_custom_target(${CLEAN_TARGET}
+)
+
+add_custom_command(
+TARGET ${CLEAN_TARGET} POST_BUILD
+COMMAND cd ../
+COMMAND make clean
+COMMAND rm rf *.iso
+)
 
