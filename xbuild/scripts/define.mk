@@ -59,7 +59,11 @@ endif
 
 export ECHO_RM ECHO_CC ECHO_CXX ECHO_AS ECHO_LD ECHO_AR ECHO_OUTPUT ECHO_HOSTCC
 
-CROSS_COMPILE	?= i386-elf-
+ifeq ($(HOSTOS),macos)
+	CROSS_COMPILE	?= i386-elf-
+else
+	CROSS_COMPILE	?=
+endif
 
 # Make variables (CC, etc...)
 AS			:=	nasm
@@ -72,6 +76,11 @@ OC			:=	$(CROSS_COMPILE)objcopy
 OD			:=	$(CROSS_COMPILE)objdump
 NM			:=	$(CROSS_COMPILE)nm
 
-HOSTCC		:=	gcc
+
+ifeq ($(HOSTOS),windows)
+	HOSTCC		:=	C:\MinGW\bin\gcc.exe
+else
+	HOSTCC		:=	gcc
+endif
 
 export AS AR CC LD CPP CXX OC OD NM HOSTCC
