@@ -1,5 +1,5 @@
 %include "boot.inc"
-;主引导程序
+;主引导程序 Intel格式汇编
 ;-------------------------------------------------------------
 ;SECTION MBR vstart=0x7c00
 [BITS 16]           ; Tells nasm to build 16 bits code

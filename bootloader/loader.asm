@@ -61,8 +61,8 @@ LOADER_TEXT_BASE_ATTRIBUTE  equ 0x4A
     
 ;--------------------- 1.加载 kernel -----------------------------------
 
-mov eax, KERNEL_BIN_BASE_ADDR_SEG
-mov si, KERNEL_START_SECTOR
+mov eax, KERNEL_BIN_BASE_ADDR_SEG   ; 0x6000
+mov si, KERNEL_START_SECTOR ;0x9
 mov edx, 0
 mov ecx, 400
 xor ebx, ebx 
@@ -146,9 +146,10 @@ mov [total_mem_bytes], edx     ;将内存换为 byte 单位后存入 total_mem_b
 
 ;------------------- 3.准备进入保护模式 ------------------
 ;0 关闭中断
-;1 打开A20
-;2 加载gdt
-;3 将cr0的pe位置1
+;1 打开A20 如果A20Gate被打开，当访问到0x100000~0x10FFEF之间的地址时，CPU将真正访问这块物理内存。
+;如果A20Gate被禁止，当访问0x100000~0x10FFEF之间的地址时，CPU将采用8086/8088的地址回绕。
+;2 加载gdt 保护模式下，有这样一个数据结构，它叫全局描述符表(Global Descriptor Table，GDT)，这个表中的每一项称为段描述符。
+;3 将cr0的pe位置1  更准确地说，我们要用到 CR0 寄存器的第 0 位，即 PE 位，Protection Enable，此位用于启用保护模式，是保护模式的开关，
 cli ;close the interruption
 ;------------------- 3.1 打开A20 ----------------------
 in al,0x92
@@ -252,9 +253,9 @@ mov ax,SELECTOR_DATA
 mov ds,ax
 mov es,ax
 mov ss,ax
-mov esp,LOADER_STACK_TOP
+mov esp,LOADER_STACK_TOP  ;0x900
 mov ax,SELECTOR_VIDEO
-mov gs,ax
+mov gs,ax  ;设置 显存 
 
 
 ;5.1 创建页目录及页表并初始化页内存位图
@@ -276,11 +277,14 @@ lgdt [gdt_ptr]         ; 重新加载
 
 add esp, 0xc0000000        ; 将栈指针同样映射到内核地址
 
-;5.4 把页目录·地址赋值给 cr3
+;5.4 把页目录·地址赋值给 cr3  
+;分页机制打开前要将页表地址加载到控制寄存器 cr3 中，这是启用分页机制的先决条件之一，在
+;介绍二级页表时会细说。所以，在打开分页机制前加载到寄存器 cr3 中的是页表的物理地址，页表中页表 项的地址自然也是物理地址了。
 mov eax, PAGE_DIR_TABLE_POS
 mov cr3, eax
 
 ;5.5 打开 cr0 的pg位 (第 31 位)
+;启动分页机制的开关是将控制寄存器 cr0 的 PG 位置 1， PG位是cr0寄存器的最后一位
 mov eax, cr0
 or eax, 0x80000000
 mov cr0, eax
@@ -290,6 +294,7 @@ mov cr0, eax
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  此时不刷新流水线也没问题  ;;;;;;;;;;;;;;;;;;;;;;;
 ;由于一直处在 32 位下，原则上不需要强制刷新，经过实际测试以下两句也没问题.
 ;但以防万一，还是加上了，免得将来出来莫名其妙的问题.
+;------------------ 6.解析内核 elf格式文件，取出代码带，跳转到 main 函数 -----------------------
 jmp SELECTOR_CODE:enter_kernel        ;强制刷新流水线，更新gdt
 enter_kernel:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
