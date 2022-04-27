@@ -152,9 +152,9 @@ mov [total_mem_bytes], edx     ;将内存换为 byte 单位后存入 total_mem_b
 ;3 将cr0的pe位置1  更准确地说，我们要用到 CR0 寄存器的第 0 位，即 PE 位，Protection Enable，此位用于启用保护模式，是保护模式的开关，
 cli ;close the interruption
 ;------------------- 3.1 打开A20 ----------------------
-in al,0x92
+in al,0x92 ;从92H端口读取一字节数据到AL
 or al,0000_0010b
-out 0x92,al
+out 0x92,al  ; 将AL的值写入92H端口
 
 ;------------------- 3.2 加载GDT --------------------
 lgdt [gdt_ptr]
@@ -162,8 +162,8 @@ lgdt [gdt_ptr]
 
 
 ;------------------- 3.3 cr0第0位置1 -----------------
-mov eax,cr0
-or eax,0x00000001
+mov eax,cr0  
+or eax,0x00000001 ; pe 位
 
 mov cr0,eax
 
