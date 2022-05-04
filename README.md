@@ -6,7 +6,7 @@
 阅读本工程之前，你应该具备基础的操作系统知识，本工程不会探讨具体的操作系统知识，旨在探讨和研究如何解决开发操作系统过程中遇到的效率问题，怎么使用现有的工具来提高开发和调试操作系统的效率，如何提高操作系统的开发体验
 
 本工程主要由以下五个模块组成:<a href="#bootloader_id">bootloader</a>、<a href="#xbuild_id">xbuild</a>、<a href="#grub2_id">grub2</a>、
-<a href="#CMake_id">CMake</a>、<a href="#IDE_id">IDE</a>
+<a href="#CMake_id">CMake</a>、<a href="#IDE_id">IDE</a>、<a href="#VSCode_id">VSCode</a>
 
 <span id="bootloader_id"></span>
 
@@ -320,10 +320,34 @@ cd IDE
 ### 优点:
 工程更加直观，具备方法跳转、方法名高亮、全局查找、一键调试等优点
 
+<span id="VSCode_id"></span>
+## VSCode
 
+vscode 需要安装两个扩展插件：`Native Debug`和`CodeLLDB`
 
+其中 .vscode/launch.json 配置如下
 
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "KernelDbg",
+            "type": "lldb",
+            "request": "custom",
+            "preLaunchTask": "run",
+            "targetCreateCommands": ["target create ${workspaceFolder}/kernel.elf"],
+            "processCreateCommands": ["gdb-remote localhost:1234"],
+            "sourceMap": {"${workspaceFolder}" : "${workspaceFolder}"},
+            "console": "internalConsole",
+        }
+    ]
+}
 
+```
+这样配置完以后就可以使用vscode实时断点调试了
+
+![](./vscode_1.png)
 
 # 待做:
 

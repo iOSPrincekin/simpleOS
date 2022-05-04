@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "KernelDbg",
+            "type": "lldb",
+            "request": "custom",
+            "preLaunchTask": "run",
+            "targetCreateCommands": ["target create ${workspaceFolder}/kernel.elf"],
+            "processCreateCommands": ["gdb-remote localhost:1234"],
+            "sourceMap": {"${workspaceFolder}" : "${workspaceFolder}"},
+            "console": "internalConsole",
+        }
+    ]
+}

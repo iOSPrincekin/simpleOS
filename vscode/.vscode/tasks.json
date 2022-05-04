@@ -1,0 +1,57 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "target": "kernel.elf",
+            "CP":"cp",
+            "MKISOFS": "grub-mkrescue",
+            "MKISOFS_FLAGS": "-graft-points -input-charset utf8 -sysid \" -appid \" -volid \"simpleOS\" -R -no-emul-boot -boot-load-size 4 -boot-info-table -b ./boot/grub/stage2_eltorito",
+            "HOST_PSW": "lh1992524",
+            "SUDO": "sudo -S <<< lh1992524",
+            "QEMU": "/Users/lee/Desktop/Computer_Systems/qemu/install/bin/qemu-system-i386",
+            "SUDO_QEMU": "${SUDO} ${QEMU}",
+            "QEMU_NET_ARGUMENT": "-nic vmnet-bridged,ifname=en0,model=pcnet",
+            "KERNSRC": "${workspaceFolder}/",
+            "OS_NAME": "PrincekinOS",
+            "QEMU_DEBUG_ARGUMENT": " -d int -D ../debug/qemu.txt",
+            "QEMU_ARGUMENT": " -s -S -m 512m ${QEMU_NET_ARGUMENT} -name \"${OS_NAME}\" -serial stdio -cdrom ${KERNSRC}/${OS_NAME}.iso ${QEMU_DEBUG_ARGUMENT}",
+            "MAKE": "make",
+        }
+    },
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "echo ${workspaceFolder}\n cd ${KERNSRC}\n make\n"
+        },
+        {
+            "label": "closeQemu",
+            "type": "shell",
+            "command": "if pgrep qemu-system-i386; then sudo -S <<< lh1992524 pkill qemu-system-i386; fi"
+        },
+        {
+            "label": "grub",
+            "type": "shell",
+            "command": "cd ${KERNSRC}\n ${CP} ${target} ./isofiles/boot\n ${MKISOFS} -graft-points -input-charset utf8 -sysid \"\" -appid \"\" -volid \"simpleOS\" -R -no-emul-boot -boot-load-size 4 -boot-info-table -b boot/stage2_eltorito  -o simpleOS.iso isofiles"
+        },
+        {
+            "label": "qemu",
+            "type": "shell",
+            "command": "cd ${KERNSRC}\n sudo -S <<< lh1992524 qemu-system-i386 -s -S -m 512m -name simpleOS -serial stdio -cdrom ./simpleOS.iso",
+        },
+        {
+            "label": "sleep",
+            "type": "shell",
+            "command": "sleep 6"
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "command": "echo ${workspaceFolder}",
+            "dependsOrder": "sequence",
+            "dependsOn": ["closeQemu","build","grub","qemu","sleep"]
+        }
+    ]
+}
